@@ -50,7 +50,9 @@ def runbrim(P: torch.Tensor, J: torch.Tensor, h: torch.Tensor, clauses: Iterable
         # config.C - the capacitance
         
         # <---- YOUR CODE HERE v---->
-        #        <spin update> 
+        # print(spin.T.matmul(P.matmul(spin)).s)
+        gradient = -(J.matmul(spin.sign()) + h + 1/2 * torch.einsum('ijk,jl,kl->il', P, spin.sign(), spin.sign())) * config.t_step / config.C
+        spin += gradient
         # <---- YOUR CODE HERE ^---->
 
         # Add noise

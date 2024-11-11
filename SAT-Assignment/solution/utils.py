@@ -37,7 +37,12 @@ def sign(x):
 def unsat_count(spin, clauses):
     unsat_count = len(clauses)
     # <---- YOUR CODE HERE v----->
-    
+    for c in clauses:
+        for lit in c:
+            if sign(lit) == spin[abs(lit)-1].sign():
+                unsat_count -= 1
+                break
+            # unsat_count += 1
     # <---- YOUR CODE HERE ^----->
     return unsat_count
 
