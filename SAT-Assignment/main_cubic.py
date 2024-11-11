@@ -7,7 +7,7 @@ from typing import Iterable
 
 torch.manual_seed(0) # fix the random seed for reproducibility
 
-def runbrim(P: torch.Tensor, J: torch.Tensor, h: torch.Tensor, clauses: Iterable[Iterable], config: BRIMconfig, spin: torch.Tensor = None):
+def runbrim(P: torch.Tensor, J: torch.Tensor, h: torch.Tensor, clauses: Iterable[Iterable], config: BRIMconfig, spin: torch.Tensor = None, const = 0):
     # Number of annealing steps
     annealing_steps: float = config.t_stop / config.t_step
     h = h.unsqueeze(-1)
@@ -51,7 +51,7 @@ def runbrim(P: torch.Tensor, J: torch.Tensor, h: torch.Tensor, clauses: Iterable
         
         # <---- YOUR CODE HERE v---->
         # print(spin.T.matmul(P.matmul(spin)).s)
-        gradient = (J.matmul(spin.sign()) + h + 1/2* torch.einsum('ijk,jl,kl->il', P, spin.sign(), spin.sign())) * config.t_step / config.C
+        gradient = -(J.matmul(spin.sign()) + h + 1/2 * torch.einsum('ijk,jl,kl->il', P, spin.sign(), spin.sign())) * config.t_step / config.C
         spin += gradient
         # <---- YOUR CODE HERE ^---->
 
@@ -67,17 +67,16 @@ def runbrim(P: torch.Tensor, J: torch.Tensor, h: torch.Tensor, clauses: Iterable
 
         # save the cut value
         if i % 1000 == 0:
-            print(spin.sign().T @ gradient / config.t_step * config.C * config.R)
             unsats.append(unsat_count(spin, clauses))
     return unsats
 
 
 def main():
     config: BRIMconfig = BRIMconfig()
-    config.t_stop = 1e-6
+    config.t_stop = 4e-6
     nvars, clauses = parse_dimacs_cnf("uf20-01.cnf")
     h, J, P, const = convert_clauses_to_ising(nvars, clauses)
-    cuts = runbrim(h=h, P=P, J=J, clauses=clauses, config=config)
+    cuts = runbrim(h=h, P=P, J=J, clauses=clauses, config=config,const=const)
     print(f"final_cut_value: {cuts[-1]}, hardware_time: {config.t_stop} seconds")
     fig, ax = plt.subplots()
     ax.set_title("BRIM simulator - Cut Value vs. Iteration")

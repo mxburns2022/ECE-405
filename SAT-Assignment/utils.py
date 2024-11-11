@@ -8,8 +8,8 @@ class BRIMconfig:
         self,
         R=310e3,
         C=49e-15,
-        scale_start=2.4,
-        scale_end=0.6,
+        scale_start=2.8,
+        scale_end=0.4,
         t_step=2.2e-11,
         t_stop=2.2e-6,
     ) -> None:
@@ -32,7 +32,7 @@ def _calc_energy(spin, J, config):
     return -0.5 * torch.matmul(_spin.T, torch.matmul(J, _spin)) * config.R * config.maxW
 
 def sign(x):
-    return -1 if x > 0 else 1
+    return 1 if x > 0 else -1
 
 def unsat_count(spin, clauses):
     unsat_count = len(clauses)
@@ -77,7 +77,7 @@ def convert_clauses_to_ising(num_vars, clauses, dtype=torch.float32):
         for literal in clause:
             var = var_symbols[abs(literal) - 1]
             term *= (1 - var) if literal > 0 else (1 + var)
-        expanded = sp.expand(term) / 8 #in HOIM paper, they added 1/8 to make the energy look great
+        expanded =  1/8 *sp.expand(term) #in HOIM paper, they added 1/8 to make the energy look great
         coeffs = expanded.as_coefficients_dict()
         for monomial, coeff in coeffs.items():
             if monomial == 1:
